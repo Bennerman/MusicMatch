@@ -1,5 +1,19 @@
+<<<<<<< Updated upstream
 import json
 import requests
+=======
+#TODO Horoscope API info
+import requests
+import json 
+
+base_url = "http://theastrologer-api.herokuapp.com/api/horoscope/aquarius/today"
+
+r = requests.get(base_url)
+
+horoscopeData = r.json()
+
+print(horoscopeData)
+>>>>>>> Stashed changes
 
 r = requests.get(url="http://horoscope-api.herokuapp.com/horoscope/today/Libra")
 
