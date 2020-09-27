@@ -2,6 +2,9 @@ import base64
 import requests
 import datetime
 
+#######################
+# Authorization Setup #
+#######################
 client_id = "ceb26cec40f4432b807c40a0aeef6e4a"
 client_secret = "d885f86f83074d1d9d0ec855558b7c2f"
 
@@ -21,14 +24,17 @@ token_header = {
 }
 
 
-
-
 r = requests.post(token_url, data=token_data, headers=token_header)
+valid_request = r.status_code in range(200, 299) #checks whether request is valid
 
-token_response_data = r.json()
+if valid_request:
 
-now = datetime.datetime.now()
-access_token = token_response_data['authorize']
-expires_in = token_response_data['expires_in']
-expires = now + datetime.timedelta(seconds=expires_in)
-did_expire = expires < now
+    token_response_data = r.json()
+
+    now = datetime.datetime.now()
+
+    access_token = token_response_data['access_token']
+    expires_in = token_response_data['expires_in']
+    expires = now + datetime.timedelta(seconds=expires_in)
+    did_expire = expires < now
+
