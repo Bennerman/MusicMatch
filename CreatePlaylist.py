@@ -2,6 +2,8 @@ import base64
 import requests
 import datetime
 
+from urllib.parse import urlencode
+
 #######################
 # Authorization Setup #
 #######################
@@ -111,5 +113,26 @@ class SpotifyAPI(object):  # pass object?
             
         return True
 
-client = SpotifyAPI(client_id, client_secret)
-print(client.perfom_auth())
+spotify = SpotifyAPI(client_id, client_secret)
+
+spotify.perfom_auth()
+access_token = spotify.access_token
+
+
+#use bearer instead of basic
+
+
+headers = {
+    "Authorization": f"Bearer: {access_token}"
+}
+
+print(headers["Authorization"])
+endpoint = "https://api.spotify.com/v1/search"
+
+data = urlencode({"q":"Time", "type": "track"})
+
+lookup_url = f"{endpoint}?{data}"
+
+r = requests.get(lookup_url, headers=headers)
+
+print(r.json())
