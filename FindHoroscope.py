@@ -12,4 +12,7 @@ r = requests.post('https://aztro.sameerkumar.website/', params=params)
 
 data = r.json()
 
-print(data)
+mood = data['mood']
+
+
+print(mood)
