@@ -78,7 +78,6 @@ class SpotifyAPI(object):  # pass object?
         return client_creds_b64
 
     def get_token_header(self):
-
         client_creds_b64 = self.get_client_credentials()
         return {
             "Authorization": f"Basic {client_creds_b64.decode()}"
@@ -123,16 +122,17 @@ access_token = spotify.access_token
 
 
 headers = {
-    "Authorization": f"Bearer: {access_token}"
+    "Authorization": "Bearer " + access_token
 }
 
 print(headers["Authorization"])
 endpoint = "https://api.spotify.com/v1/search"
 
-data = urlencode({"q":"Time", "type": "track"})
+data = urlencode({"q":"Replay", "type": "track"})
 
 lookup_url = f"{endpoint}?{data}"
 
 r = requests.get(lookup_url, headers=headers)
 
-print(r.json())
+print(r.text)
+print(r.status_code)
