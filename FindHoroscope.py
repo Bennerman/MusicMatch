@@ -5,7 +5,7 @@ import json
 #Parameters to pass to the api
 
 params = (
-        ('sign', 'leo'),
+        ('sign', 'gemini'),
 ('day', 'today'),
 )
 
@@ -17,4 +17,6 @@ data = r.json()
 mood = data['mood']
 
 
+
 print(mood)
+

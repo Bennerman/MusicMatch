@@ -127,7 +127,7 @@ class SpotifyAPI(object):  # pass object?
         return token
 
 
-    def search(self, query, search_type='artist'):
+    def search(self, query, search_type="artist"):
         access_token = self.get_access_token()
 
         headers = {
@@ -139,10 +139,21 @@ class SpotifyAPI(object):  # pass object?
         lookup_url = f"{endpoint}?{data}"
 
         r = requests.get(lookup_url, headers=headers)
-
+        print(r.status_code)
         if r.status_code in range(200, 299):
-            return{}
-        return r.json
+            return r.json()
+        return r.json()
+
+    def get_album(self, _id):
+        
+        pass
+    
+    def get_artist(self, _id):
+        endpoint = "https://api.spotify.com/"
+        data = 	urlencode(f"{base_url}/v1/artists/{_id}")
+
+
+        pass
 
 
 spotify = SpotifyAPI(client_id, client_secret)
@@ -170,5 +181,5 @@ spotify.perfom_auth()
 # print(r.text)
 # print(r.status_code)
 
-spotify.search("Make no sense", search_type="Track")
+print(spotify.search("Travis Scott", search_type="artist"))
 
