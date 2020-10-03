@@ -70,7 +70,7 @@ class SpotifyAPI(object):  # pass object?
         client_secret = self.client_secret
 
         if client_secret == None or client_id == None:
-            raise Exception("You need to set client_id and client_secret")
+            raise Exception("Could not authenticate client")
 
         client_creds = f"{client_id}:{client_secret}"
         client_creds_b64 = base64.b64encode(client_creds.encode())
@@ -112,27 +112,63 @@ class SpotifyAPI(object):  # pass object?
             
         return True
 
+    def get_access_token(self):
+        auth = self.perfom_auth()
+        if not auth:
+            raise Exception("Authentication failed")
+        token = self.access_token
+        expires = self.access_token_expires
+        now = datetime.datetime.now()
+        if expires < now:
+            self.perfom_auth()
+        elif token == None:
+            self.perfom_auth()
+            return self.get_access_token()
+        return token
+
+
+    def search(self, query, search_type='artist'):
+        access_token = self.get_access_token()
+
+        headers = {
+            "Authorization": "Bearer " + access_token
+        }
+
+        endpoint = "https://api.spotify.com/v1/search"
+        data = urlencode({"q":query, "type": search_type})
+        lookup_url = f"{endpoint}?{data}"
+
+        r = requests.get(lookup_url, headers=headers)
+
+        if r.status_code in range(200, 299):
+            return{}
+        return r.json
+
+
 spotify = SpotifyAPI(client_id, client_secret)
 
 spotify.perfom_auth()
-access_token = spotify.access_token
+#access_token = spotify.access_token
 
 
 #use bearer instead of basic
 
 
-headers = {
-    "Authorization": "Bearer " + access_token
-}
+# headers = {
+#     "Authorization": "Bearer " + access_token
+# }
 
-print(headers["Authorization"])
-endpoint = "https://api.spotify.com/v1/search"
+# print(headers["Authorization"])
+# endpoint = "https://api.spotify.com/v1/search"
 
-data = urlencode({"q":"Replay", "type": "track"})
+# data = urlencode({"q":"Replay", "type": "track"})
 
-lookup_url = f"{endpoint}?{data}"
+# lookup_url = f"{endpoint}?{data}"
 
-r = requests.get(lookup_url, headers=headers)
+# r = requests.get(lookup_url, headers=headers)
 
-print(r.text)
-print(r.status_code)
+# print(r.text)
+# print(r.status_code)
+
+spotify.search("Make no sense", search_type="Track")
+
