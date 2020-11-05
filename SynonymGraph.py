@@ -174,7 +174,24 @@ class SynonymGraph:
         raise Exception
 
 
+    def getEdgeCount():
+        edgeCount = 0
+
+        for vertex in vertices._keys:
+            edgeCount += vertex.edgesLeaving.size
         
+        return edgeCount
+
+    def getVertexCount():
+        return vertices.size
+
+    def isEmpty():
+        return vertices.size == 0
+
+        
+
+
+
 
 
 
