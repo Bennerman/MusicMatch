@@ -5,7 +5,7 @@ import json
 #Parameters to pass to the api
 
 params = (
-        ('sign', 'gemini'),
+        ('sign', 'Leo'),
 ('day', 'today'),
 )
 
