@@ -127,7 +127,7 @@ class SpotifyAPI(object):  # pass object?
         return token
 
 
-    def search(self, query, search_type="artist"):
+    def searchArtist(self, query, search_type="artist"):
         access_token = self.get_access_token()
 
         headers = {
@@ -143,6 +143,42 @@ class SpotifyAPI(object):  # pass object?
         if r.status_code in range(200, 299):
             return r.json()
         return r.json()
+
+    def searchSong(self, query, search_type="track"):
+        access_token = self.get_access_token()
+
+        headers = {
+            "Authorization": "Bearer " + access_token
+        }
+
+        endpoint = "https://api.spotify.com/v1/search"
+        data = urlencode({"q":query, "type": search_type})
+        lookup_url = f"{endpoint}?{data}"
+
+        r = requests.get(lookup_url, headers=headers)
+        print(r.status_code)
+        if r.status_code in range(200, 299):
+            return r.json()
+        return r.json()
+
+    def getAudioAnalysis(self, query, search_type="track"):
+        access_token = self.get_access_token()
+        
+        headers = {
+            "Authorization": "Bearer " + access_token
+        }
+        endpoint = f"https://api.spotify.com/v1/audio-analysis/{query}"
+        
+        #data = urlencode({"q":query, "type": search_type})
+        #lookup_url = f"{endpoint}?{data}"
+        r = requests.get(endpoint, headers=headers)
+        print(r.status_code)
+        if r.status_code in range(200, 299):
+            return r.json()
+        return r.json()
+       
+        
+        
 
     
 
@@ -183,7 +219,12 @@ spotify.perfom_auth()
 # print(r.text)
 # print(r.status_code)
 
-print(spotify.search("Travis Scott", search_type="artist"))
+print(['id'])
+data = spotify.searchSong("Dead and Cold", search_type="track")
+trackID = data['tracks']['items'][0]['id']
+print(trackID)
+data = spotify.getAudioAnalysis(trackID, search_type="track")
+#print(data)
 
 '''
 IMPORTANT
@@ -210,3 +251,4 @@ limit           Optional. The target size of the list of recommended tracks.
                 For seeds with unusually small pools or when highly restrictive filtering is applied, 
                 it may be impossible to generate the requested number of recommended tracks. 
                 Debugging information for such cases is available in the response. Default: 20. Minimum: 1. Maximum: 100.
+'''

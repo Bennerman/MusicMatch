@@ -335,12 +335,7 @@ class SynonymGraph:
     #all calculations done inside method
     def dijkstrasShortestPath(self, start_query):
         
-        url = f"https://api.datamuse.com/words?ml={start_query}&sp&max=8000"
-        r = requests.get(url)
-        data = r.json()
-        
-        
-        queue = collections.deque()
+       
         #deepQueue = collections.deque()
         """
         if(not self.containsVertex(start) or not self.containsVertex(end)):
@@ -353,8 +348,8 @@ class SynonymGraph:
 
         #endNode = self.vertices.get(end)
 
-        visited = collections.deque()
-        paths = collections.deque()
+        #visited = collections.deque()
+        #paths = collections.deque()
 
         startPath = SynonymGraph.Path(startNode)
         queue.append(startPath)
@@ -403,67 +398,91 @@ class SynonymGraph:
 
 
 
-             
+                '''
                 for x in list(currNode.edgesLeaving):
                     
                     nodePath = SynonymGraph.Path(c)
                     nodePath.extend(self.getIndex(currNode.edgesLeaving, x))
                     queue.append(nodePath)
-                    
+                '''    
                        
 
             
             visited.append(currNode.data)
             temp = queue.popleft
-            paths.append(temp)
+            #paths.append(temp)
             queue.appendleft(temp)
             queue.popleft()
             print(len(queue))
 
+
+    def insertAllVertices(self, start_query):
+        url = f"https://api.datamuse.com/words?ml={start_query}&sp&max=8000"
+        r = requests.get(url)
+        data = r.json()
+        
+        
+        queue = collections.deque()
+
+        self.insertVertex(start_query)
+
+        startNode = self.vertices.get(start_query)
+        
+        queue.append(start_query)
+
+        if(len(data) <= 0):
+            raise Exception
+
+
+        while(len(queue) != 0):
+            print(len(queue))
+            nextWord = queue.popleft()
+            queue.appendleft(nextWord)
+           
+            url = f"https://api.datamuse.com/words?ml={nextWord}&sp&max=8000"
+            r = requests.get(url)
+            data = r.json()
+           
+            '''
+            if(self.vertices.get(nextWord)):
+                queue.popleft()
+                continue
+            '''
             
 
-        '''
-        finalPath = None
-        
-        for path in paths:
-                if(path.start == startNode and path.end == endNode):
-                    finalPath = path
-            
-        return finalPath   
-        '''
-        
+            if(nextWord != None):
+                size = 0
+                for word in data:
+                    if(size == 5):
+                        break
+
+                    try:
+                        string = word['tags'][len(word['tags']) - 1]
+                    except KeyError:
+                        continue
+
+                    if(string == 'adj' and not self.vertices.get(word['word'])):
+                        try:
+                           string = word['score']
+                        except KeyError:
+                            print("No score")
+                            continue
+
+                        self.insertVertex(word['word'])
+                        targetVert = self.vertices.get(word['word'])
+                        self.insertEdge(startNode, targetVert, word['score'])
+                        queue.append(word['word'])
+                    size += 1
+            queue.popleft()
+            '''
+            for vertex in list(self.vertices._keys):
+                print(vertex)
+            '''
+    #gapminder.loc[:,'pop_in_millions'] = -1 add column
+    #gapminder.
 
 
-
-                
-'''
-url = "https://rapidapi.p.rapidapi.com/associations/"
-
-querystring = {"entry":"funny"}
-
-headers = {
-        'x-rapidapi-key': "38a7bfcc1dmsh9dbba8c93ef165ep187a93jsnf1655cfe5b7a",
-        'x-rapidapi-host': "twinword-word-associations-v1.p.rapidapi.com"
-    }
-
-response = requests.request("GET", url, headers=headers, params=querystring)
-
-data = response.json()
-
-
-url = "https://rapidapi.p.rapidapi.com/associations/"
-
-        querystring = {f"entry":{start_query}}
-
-        headers = {
-            'x-rapidapi-key': "38a7bfcc1dmsh9dbba8c93ef165ep187a93jsnf1655cfe5b7a",
-            'x-rapidapi-host': "twinword-word-associations-v1.p.rapidapi.com"
-        }
-
-        response = requests.request("GET", url, headers=headers, params=querystring)
-
-        data = response.json()
-'''
+  
 
 
 
@@ -478,7 +497,7 @@ for key, value in data['associations_scored'].items():
 
 graph = SynonymGraph()
 
-graph.dijkstrasShortestPath('funny')
+graph.insertAllVertices('funny')
 
 
 
