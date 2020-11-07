@@ -333,87 +333,68 @@ class SynonymGraph:
             deepEdges.popleft()
 
     #all calculations done inside method
-    def dijkstrasShortestPath(self, start_query):
+    def dijkstrasShortestPath(self, start, end):
         
        
-        #deepQueue = collections.deque()
-        """
-        if(not self.containsVertex(start) or not self.containsVertex(end)):
-            raise Exception
-        """
-        self.insertVertex(start_query)
-
-        startNode = self.vertices.get(start_query)
+        queue = collections.deque()
         
+        if(not self.containsVertex(start)):
+            raise Exception
+        
+        startNode = self.vertices.get(start)
+        endNode = self.vertices.get(end)
 
-        #endNode = self.vertices.get(end)
-
-        #visited = collections.deque()
-        #paths = collections.deque()
+        visited = collections.deque()
+        paths = collections.deque()
 
         startPath = SynonymGraph.Path(startNode)
+        
         queue.append(startPath)
 
         
-        '''
-        if(startNode.edgesLeaving.size == 0):
+        
+        if(len(startNode.edgesLeaving) == 0):
                 raise Exception
-        '''
-        if(len(data) <= 0):
-            raise Exception
+        
 
 
         while(len(queue) != 0):
-            print(len(queue))
             c = queue.popleft()
            
-            querystring = {f"entry":{c.end.data}}
-            response = requests.request("GET", url, headers=headers, params=querystring)
-
-            data = response.json()
-           
-            
-            if(visited.count(c.end.data) > 0):
+            if(visited.count(c.end) > 0):
                 queue.popleft()
                 continue
 
             currNode = c.end
 
-            if(currNode != None):
-                size = 0
-                for word in data:
-                    if(size == 10):
-                        break
+            if(currNode != None and currNode.edgesLeaving != None):
+                
 
-                    try:
-                        string = word['tags'][len(word['tags']) - 1]
-                    except KeyError:
-                        continue
-
-                    if(string == 'adj'):
-                        self.insertVertex(word['word'])
-                        targetVert = self.vertices.get(word['word'])
-                        self.insertEdge(startNode, targetVert, word['score'])
-                    size += 1
-
-
-
-                '''
                 for x in list(currNode.edgesLeaving):
                     
                     nodePath = SynonymGraph.Path(c)
                     nodePath.extend(self.getIndex(currNode.edgesLeaving, x))
                     queue.append(nodePath)
-                '''    
-                       
 
+                       
             
             visited.append(currNode.data)
             temp = queue.popleft
             #paths.append(temp)
             queue.appendleft(temp)
             queue.popleft()
-            print(len(queue))
+            
+        finalPath = None
+        for path in paths:
+            if(path.start == startNode.data and path.end == endNode.data):
+                finalPath = path
+                break
+        
+        if (finalPath == None):
+            raise Exception
+    
+        return finalPath
+
 
 
     def insertAllVertices(self, start_query):
@@ -455,13 +436,19 @@ class SynonymGraph:
                 for word in data:
                     if(size == 5):
                         break
-
+                    #add in score
                     try:
-                        string = word['tags'][len(word['tags']) - 1]
+                        string = word['tags'][len(word['tags']) - 1] 
+                        backupString = None
+                        if(len(word['tags']) == 3):
+                            backupString = word['tags'][len(word['tags']) - 2]
+                        elif(len(word['tags']) == 4):
+                            backupString = word['tags'][len(word['tags']) - 3]
+                        
                     except KeyError:
                         continue
 
-                    if(string == 'adj' and not self.vertices.get(word['word'])):
+                    if(string == 'adj' or backupString == 'adj'  and not self.vertices.get(word['word'])):
                         try:
                            string = word['score']
                         except KeyError:
@@ -481,9 +468,13 @@ class SynonymGraph:
     #gapminder.loc[:,'pop_in_millions'] = -1 add column
     #gapminder.
 
+    def shortestPath(self, start, end):
+        return self.dijkstrasShortestPath(start, end).dataSequence
 
-  
+    def getPathCost(self, start, end):
+        return self.dijkstrasShortestPath(start, end).distance
 
+    
 
 
 
@@ -498,6 +489,8 @@ for key, value in data['associations_scored'].items():
 graph = SynonymGraph()
 
 graph.insertAllVertices('funny')
+
+path = graph.getPathCost('funny', 'hilarious')
 
 
 
@@ -515,4 +508,37 @@ for word in data:
 '''
 
 
-
+'''
+Admiration - *
+Adulatory - * 
+Aesthetic appreciation - Appreciative - *
+Amused - *
+Anxious - *
+Awesome - *
+Awkward - *
+Bored - *
+Calm - *
+Confused - *
+Craved - *
+Disgusted - *
+Empathetic pain - Empathetic - *
+Entranced - *
+Envious - *
+Excited - *
+Fearful - *
+Horrendous - * 
+Interesting - *
+Joyful - *
+Nostalgic - *
+Romantic - *
+Sad - *
+Satisfied - *
+Lustful - *
+Sympathetic - *
+Triumphant - *
+'''
+data = [{'a': 1, 'b': 2}, {'a': 5, 'b': 10, 'c': 20}] 
+   
+# With two column indices, values same  
+# as dictionary keys 
+#df1 = pd.DataFrame(data, index =['funny'], columns =['admiration', 'adoration', 'appreciation', 'amusement', 'anxiety', 'awe', 'awkwardness', 'boredom', 'calmness', 'confusion', 'disgust', 'empathy'])
