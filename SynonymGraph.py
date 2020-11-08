@@ -5,9 +5,9 @@ import urllib.request
 import array
 import collections 
 import copy
-import pandas
+import pandas as pd
 #from multipledispatch import dispatch 
-#sfrom multimethod import multimethod
+#from multimethod import multimethod
 
 
 
@@ -130,11 +130,13 @@ class SynonymGraph:
 
     def __init__(self):
         self.vertices = HashTable(1000000)
-        self.dataFrame = pandas.DataFrame()
+        self.df = pd.DataFrame(columns =['admirable', 'adoring', 'appreciative', 'amused', 'anxious', 'awesome', 'awkward', 'bored', 'calm', 'confused', 'craved', 'disgusted', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'horrendous', 'interesting', 'joyful', 'nostalgic', 'romantic', 'sad', 'satisfied', 'lustful', 'sympathetic', 'triumphant'])
+
 
 
     class Vertex:
         edgesLeaving = collections.deque()
+        paths = collections.deque()
         size = 0
         data = 0
 
@@ -459,6 +461,7 @@ class SynonymGraph:
                         targetVert = self.vertices.get(word['word'])
                         self.insertEdge(startNode, targetVert, word['score'])
                         queue.append(word['word'])
+                        self.df.append(pd.Series(name=word['word']))
                     size += 1
             queue.popleft()
             '''
@@ -475,6 +478,20 @@ class SynonymGraph:
         return self.dijkstrasShortestPath(start, end).distance
 
     
+    def insertPaths(self):
+        for word in self.df.index:
+            for emotion in list(self.df.columns):
+                distance = self.getPathCost(word, emotion)
+                self.df.at[word, emotion]= distance
+
+                
+    def dataFrameToCSV(self):
+        self.df.to_csv('wordgraph.csv', index=False)
+    
+
+    
+    
+    
 
 
 
@@ -489,9 +506,28 @@ for key, value in data['associations_scored'].items():
 graph = SynonymGraph()
 
 graph.insertAllVertices('funny')
+graph.insertPaths()
+graph.dataFrameToCSV()
 
-path = graph.getPathCost('funny', 'hilarious')
+#path = graph.getPathCost('funny', 'hilarious')
 
+#data = [{'a': 1, 'b': 2}, {'a': 5, 'b': 10, 'c': 20}] 
+
+#df.to_csv(index=False)
+#df.at['funny','admirable']= 20
+
+
+    
+    
+#df = pd.DataFrame(columns =['admirable', 'adoring', 'appreciative', 'amused', 'anxious', 'awesome', 'awkward', 'bored', 'calm', 'confused', 'craved', 'disgusted', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'horrendous', 'interesting', 'joyful', 'nostalgic', 'romantic', 'sad', 'satisfied', 'lustful', 'sympathetic', 'triumphant'])
+
+
+
+#print(index)
+'''
+for row in df.iterrows():
+    print(row)
+'''
 
 
 
@@ -537,8 +573,7 @@ Lustful - *
 Sympathetic - *
 Triumphant - *
 '''
-data = [{'a': 1, 'b': 2}, {'a': 5, 'b': 10, 'c': 20}] 
+
    
 # With two column indices, values same  
 # as dictionary keys 
-#df1 = pd.DataFrame(data, index =['funny'], columns =['admiration', 'adoration', 'appreciation', 'amusement', 'anxiety', 'awe', 'awkwardness', 'boredom', 'calmness', 'confusion', 'disgust', 'empathy'])
