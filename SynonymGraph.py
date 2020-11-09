@@ -136,7 +136,6 @@ class SynonymGraph:
 
     class Vertex:
         edgesLeaving = collections.deque()
-        paths = collections.deque()
         size = 0
         data = 0
 
@@ -405,32 +404,35 @@ class SynonymGraph:
         data = r.json()
         
         
+        
         queue = collections.deque()
-
-        self.insertVertex(start_query)
+        if(not self.vertices.get(start_query)):
+            self.insertVertex(start_query)
+        else:
+            return
 
         startNode = self.vertices.get(start_query)
         
         queue.append(start_query)
 
+        self.df = self.df.append(pd.Series(name=start_query))
         if(len(data) <= 0):
             raise Exception
 
 
         while(len(queue) != 0):
+            if(len(queue) > 5):
+                self.dataFrameToCSV()
+            
             print(len(queue))
+            #print(self.df)
             nextWord = queue.popleft()
             queue.appendleft(nextWord)
            
-            url = f"https://api.datamuse.com/words?ml={nextWord}&sp&max=8000"
+            url = f"https://api.datamuse.com/words?ml={nextWord}&sp&md=f&max=8000"
             r = requests.get(url)
             data = r.json()
            
-            '''
-            if(self.vertices.get(nextWord)):
-                queue.popleft()
-                continue
-            '''
             
 
             if(nextWord != None):
@@ -440,29 +442,30 @@ class SynonymGraph:
                         break
                     #add in score
                     try:
-                        string = word['tags'][len(word['tags']) - 1] 
-                        backupString = None
-                        if(len(word['tags']) == 3):
-                            backupString = word['tags'][len(word['tags']) - 2]
-                        elif(len(word['tags']) == 4):
-                            backupString = word['tags'][len(word['tags']) - 3]
+                        freq = None
+                        for tag in word['tags']:
+                            if(tag[:1] == 'f'):
+                                freq = tag[2:3]
+                                break
+
+                        for tag in word['tags']:   
+                            if(int(freq) > 3 and tag == 'adj' and not self.vertices.get(word['word'])):
+                                self.insertVertex(word['word'])
+                                targetVert = self.vertices.get(word['word'])
+                                self.insertEdge(startNode, targetVert, word['score'])
+                                queue.append(word['word'])
+                                self.df = self.df.append(pd.Series(name=word['word']))
+                                size += 1
+                                break
                         
                     except KeyError:
+                        print("Not adj or no score")
                         continue
 
-                    if(string == 'adj' or backupString == 'adj'  and not self.vertices.get(word['word'])):
-                        try:
-                           string = word['score']
-                        except KeyError:
-                            print("No score")
-                            continue
+                   
 
-                        self.insertVertex(word['word'])
-                        targetVert = self.vertices.get(word['word'])
-                        self.insertEdge(startNode, targetVert, word['score'])
-                        queue.append(word['word'])
-                        self.df.append(pd.Series(name=word['word']))
-                    size += 1
+                        
+                    
             queue.popleft()
             '''
             for vertex in list(self.vertices._keys):
@@ -486,7 +489,7 @@ class SynonymGraph:
 
                 
     def dataFrameToCSV(self):
-        self.df.to_csv('wordgraph.csv', index=False)
+        self.df.to_csv('wordgraph.csv', index=True)
     
 
     
@@ -505,9 +508,30 @@ for key, value in data['associations_scored'].items():
 
 graph = SynonymGraph()
 
-graph.insertAllVertices('funny')
-graph.insertPaths()
+graph.insertAllVertices('depressed')
+graph.insertAllVertices('angry')
+graph.insertAllVertices('frustrated')
+graph.insertAllVertices('appreciative')
+graph.insertAllVertices('amused')
+graph.insertAllVertices('anxious')
+graph.insertAllVertices('awkward')
+graph.insertAllVertices('bored')
+graph.insertAllVertices('calm')
+graph.insertAllVertices('confused')
+graph.insertAllVertices('disgusted')
+graph.insertAllVertices('empathetic')
+graph.insertAllVertices('entranced')
+graph.insertAllVertices('envious')
+graph.insertAllVertices('excited')
+graph.insertAllVertices('fearful')
+graph.insertAllVertices('joyful')
+graph.insertAllVertices('horrendous')
+graph.insertAllVertices('stressed')
+graph.insertAllVertices('prideful')
+
 graph.dataFrameToCSV()
+#graph.insertPaths()
+#graph.dataFrameToCSV()
 
 #path = graph.getPathCost('funny', 'hilarious')
 
@@ -577,3 +601,4 @@ Triumphant - *
    
 # With two column indices, values same  
 # as dictionary keys 
+

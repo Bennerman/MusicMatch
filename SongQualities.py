@@ -1,3 +1,5 @@
+import pandas
+
 # This class is just a note file for now... it manually matches results of FindHoroscope.py
 
 # For more detailed stuff on this data:
@@ -35,4 +37,6 @@ valence: 0.75
 
 '''
 
+
+pd = 
 
