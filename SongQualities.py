@@ -15,4 +15,24 @@
 # valence (float, 0.0-1.0) - positivity of the track
 # tempo (float, BPM) - mostly in range of 70-160 bpm 
 
+# global: duration_ms < 300,000
+
+# energy, danceability, acousticness, valence
+
+'''
+Depressed - Funeral - Phoebe Bridgers Bubble Gum - Clairo
+energy: 0.15
+danceability: 0.5
+acousticness: 0.85
+valence: 0.2
+
+Prideful -- Suge - Dababy, Clique - Kanye, Money Machine
+energy: 0.65
+danceability: 0.7
+acousticness: 0.2
+valence: 0.75
+
+
+'''
+
 

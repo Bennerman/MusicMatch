@@ -220,7 +220,7 @@ spotify.perfom_auth()
 # print(r.status_code)
 
 print(['id'])
-data = spotify.searchSong("Dead and Cold", search_type="track")
+data = spotify.searchSong("Money Machine", search_type="track")
 trackID = data['tracks']['items'][0]['id']
 print(trackID)
 data = spotify.getAudioAnalysis(trackID, search_type="track")
