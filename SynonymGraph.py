@@ -129,8 +129,14 @@ class SynonymGraph:
     
 
     def __init__(self):
-        self.vertices = HashTable(1000000)
-        self.df = pd.DataFrame(columns =['admirable', 'adoring', 'appreciative', 'amused', 'anxious', 'awesome', 'awkward', 'bored', 'calm', 'confused', 'craved', 'disgusted', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'horrendous', 'interesting', 'joyful', 'nostalgic', 'romantic', 'sad', 'satisfied', 'lustful', 'sympathetic', 'triumphant'])
+        emotions = ['depressed', 'angry', 'frustrated', 'appreciative', 'amused', 'anxious', 'awkward', 'bored', 'calm', 'confused', 'disgusted', 'calm', 'confused', 'disgusted', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'joyful', 'horrendus', 'stressed', 'prideful']
+        self.vertices = HashTable(20000)
+        #words
+        self.df = pd.DataFrame()
+        
+        #dijkstras
+        self.dj = pd.DataFrame()
+        self.dj = self.dj.reindex(columns=emotions)
 
 
 
@@ -204,11 +210,6 @@ class SynonymGraph:
         sourceVertex.size += 1
         return True
 
- 
-        
-
-
-
     
     def removeEdge(self, source, target):
         if(source == None or target == None):
@@ -231,7 +232,6 @@ class SynonymGraph:
         
         return False
     
-
     def containsVertex(self, data):
         if(data == None):
             raise TypeError
@@ -284,6 +284,19 @@ class SynonymGraph:
     def isEmpty(self):
         return self.vertices.size == 0
 
+    def insertEdgestoDataFrame(self):
+        for word in self.df.index:
+            vertex = self.vertices.get(word)
+            for edge in list(vertex.edgesLeaving):
+                self.df.at[word, edge.target.data] = edge.weight
+        
+
+
+    def insertDataFrame(self, fileName):
+        self.df = pd.read_csv(fileName)
+
+    
+
 
     class Path:
 
@@ -309,7 +322,6 @@ class SynonymGraph:
 
         def extend(self, edge):
             self.dataSequence.append(edge.target.data)
-            self.end.edgesLeaving.append(edge)
             self.distance += edge.weight
             self.end = edge.target
 
@@ -395,8 +407,15 @@ class SynonymGraph:
             raise Exception
     
         return finalPath
-
-
+    '''
+    def insertFromDataFrame(self):
+        for word in df.index:
+            self.insertVertex(word)
+        
+        for word in df.columns:
+            self.insertVertex
+        
+    '''
 
     def insertAllVertices(self, start_query):
         url = f"https://api.datamuse.com/words?ml={start_query}&sp&max=8000"
@@ -406,27 +425,32 @@ class SynonymGraph:
         
         
         queue = collections.deque()
+        '''
         if(not self.vertices.get(start_query)):
             self.insertVertex(start_query)
         else:
             return
-
-        startNode = self.vertices.get(start_query)
+        '''
+        if(self.vertices.get(start_query)):
+            return
+        
+        self.insertVertex(start_query)
+        
         
         queue.append(start_query)
-
+        self.df[start_query] = 0
         self.df = self.df.append(pd.Series(name=start_query))
         if(len(data) <= 0):
             raise Exception
 
 
         while(len(queue) != 0):
-            if(len(queue) > 5):
-                self.dataFrameToCSV()
+            self.dataFrameToCSV()
             
             print(len(queue))
             #print(self.df)
             nextWord = queue.popleft()
+            
             queue.appendleft(nextWord)
            
             url = f"https://api.datamuse.com/words?ml={nextWord}&sp&md=f&max=8000"
@@ -436,6 +460,7 @@ class SynonymGraph:
             
 
             if(nextWord != None):
+                nextNode = self.vertices.get(nextWord)
                 size = 0
                 for word in data:
                     if(size == 5):
@@ -443,6 +468,7 @@ class SynonymGraph:
                     #add in score
                     try:
                         freq = None
+                        
                         for tag in word['tags']:
                             if(tag[:1] == 'f'):
                                 freq = tag[2:3]
@@ -452,9 +478,12 @@ class SynonymGraph:
                             if(int(freq) > 3 and tag == 'adj' and not self.vertices.get(word['word'])):
                                 self.insertVertex(word['word'])
                                 targetVert = self.vertices.get(word['word'])
-                                self.insertEdge(startNode, targetVert, word['score'])
+                                self.insertEdge(nextNode, targetVert, word['score'])
+                                self.insertEdge(nextNode, nextNode, 0)
                                 queue.append(word['word'])
+                                
                                 self.df = self.df.append(pd.Series(name=word['word']))
+                                self.df[word['word']] = None
                                 size += 1
                                 break
                         
@@ -464,13 +493,18 @@ class SynonymGraph:
 
                    
 
-                        
-                    
+            '''
+            for edge in self.vertices.get(nextWord).edgesLeaving:
+                print(edge.target.data)
+                print(edge.weight)
+            '''
+
             queue.popleft()
             '''
             for vertex in list(self.vertices._keys):
                 print(vertex)
             '''
+        
     #gapminder.loc[:,'pop_in_millions'] = -1 add column
     #gapminder.
 
@@ -479,7 +513,6 @@ class SynonymGraph:
 
     def getPathCost(self, start, end):
         return self.dijkstrasShortestPath(start, end).distance
-
     
     def insertPaths(self):
         for word in self.df.index:
@@ -487,9 +520,34 @@ class SynonymGraph:
                 distance = self.getPathCost(word, emotion)
                 self.df.at[word, emotion]= distance
 
-                
     def dataFrameToCSV(self):
         self.df.to_csv('wordgraph.csv', index=True)
+
+    def shortestDataFrameToCSV(self):
+        self.df.to_csv('shortestpath.csv', index=True)
+    
+    def insertVerticesAndEdgesFromCSV(self):
+        self.insertDataFrame('wordgraph.csv')
+        print(self.df)
+        for word in list(self.df.index):
+            self.insertVertex(word)
+
+        for row in self.df:
+            for column in self.df:
+                self.insertEdge(row, column, self.df.at[row, column])
+        
+    
+    def dijkstrasShortestPathtoCSV(self):
+        for word in self.df.index:
+            for emotion in self.dj.columns:
+                self.dj.at[word, emotion] = self.getPathCost(word, emotion)
+        
+    
+
+
+            
+            
+
     
 
     
@@ -529,7 +587,15 @@ graph.insertAllVertices('horrendous')
 graph.insertAllVertices('stressed')
 graph.insertAllVertices('prideful')
 
-graph.dataFrameToCSV()
+graph.insertEdgestoDataFrame()
+
+'''
+graph.insertVerticesAndEdgesFromCSV()
+
+graph.dijkstrasShortestPathtoCSV()
+graph.dijkstrasShortestPathtoCSV()
+'''
+
 #graph.insertPaths()
 #graph.dataFrameToCSV()
 
