@@ -129,7 +129,7 @@ class SynonymGraph:
     
 
     def __init__(self):
-        emotions = ['depressed', 'angry', 'frustrated', 'appreciative', 'amused', 'anxious', 'awkward', 'bored', 'calm', 'confused', 'disgusted', 'calm', 'confused', 'disgusted', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'joyful', 'horrendus', 'stressed', 'prideful']
+        emotions = ['depressed', 'angry', 'frustrated', 'appreciative', 'amused', 'anxious', 'awkward', 'bored', 'disgusted', 'calm', 'confused', 'empathetic', 'entranced', 'envious', 'excited', 'fearful', 'joyful', 'horrendous', 'stressed', 'prideful']
         self.vertices = HashTable(20000)
         #words
         self.df = pd.DataFrame()
