@@ -26,7 +26,7 @@ import pandas
 # energy, danceability, acousticness, valence
 
 '''
-Depressed - Funeral - Phoebe Bridgers Bubble Gum - Clairo
+Depressed - Funeral - Phoebe Bridgers, Bubble Gum - Clairo
 energy: 0.15
 danceability: 0.5
 acousticness: 0.85
@@ -42,5 +42,4 @@ valence: 0.75
 '''
 
 
-pd = 
 

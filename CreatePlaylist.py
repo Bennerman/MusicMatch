@@ -252,3 +252,16 @@ limit           Optional. The target size of the list of recommended tracks.
                 it may be impossible to generate the requested number of recommended tracks. 
                 Debugging information for such cases is available in the response. Default: 20. Minimum: 1. Maximum: 100.
 '''
+
+
+#scopes: 
+#user-read-private - lets us read private playlists
+#redirect_uri - where to go after user accepts or denies permission
+#response_type: code
+#client_id: already have this
+
+'''
+example
+GET https://accounts.spotify.com/authorize?client_id=5fe01282e44241328a84e7c5cc169165&response_type=code&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&scope=user-read-private%20user-read-email&state=34fFs29kd09
+
+'''

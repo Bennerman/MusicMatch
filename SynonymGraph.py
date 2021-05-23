@@ -6,6 +6,7 @@ import array
 import collections 
 import copy
 import pandas as pd
+import numpy as np
 #from multipledispatch import dispatch 
 #from multimethod import multimethod
 
@@ -141,12 +142,14 @@ class SynonymGraph:
 
 
     class Vertex:
-        edgesLeaving = collections.deque()
+        edgesLeaving = None
         size = 0
         data = 0
 
         def __init__(self, data):
             self.data = data
+            self.edgesLeaving = collections.deque()
+        
         
     class Edge:
         
@@ -189,6 +192,9 @@ class SynonymGraph:
     def insertEdge(self, source, target, weight):
         if(source == None or target == None):
             raise TypeError
+        if(source == False or target == False):
+            return
+        
         sourceVertex = self.vertices.get(source.data)
         targetVertex = self.vertices.get(target.data) #flagged
 
@@ -285,7 +291,7 @@ class SynonymGraph:
         return self.vertices.size == 0
 
     def insertEdgestoDataFrame(self):
-        for word in self.df.index:
+        for word in list(self.df.index):
             vertex = self.vertices.get(word)
             for edge in list(vertex.edgesLeaving):
                 self.df.at[word, edge.target.data] = edge.weight
@@ -372,6 +378,7 @@ class SynonymGraph:
 
 
         while(len(queue) != 0):
+            print(len(queue))
             c = queue.popleft()
            
             if(visited.count(c.end) > 0):
@@ -393,11 +400,11 @@ class SynonymGraph:
             
             visited.append(currNode.data)
             temp = queue.popleft
-            #paths.append(temp)
-            queue.appendleft(temp)
-            queue.popleft()
-            
+            paths.append(temp)
+
+        '''   
         finalPath = None
+
         for path in paths:
             if(path.start == startNode.data and path.end == endNode.data):
                 finalPath = path
@@ -407,6 +414,14 @@ class SynonymGraph:
             raise Exception
     
         return finalPath
+        '''
+        #i = 0
+        for path in paths:
+            self.dj.at[self.dj.loc[path.end.data], start] = path.weight
+            #i += 1
+
+        print(self.dj)
+        
     '''
     def insertFromDataFrame(self):
         for word in df.index:
@@ -418,12 +433,10 @@ class SynonymGraph:
     '''
 
     def insertAllVertices(self, start_query):
-        url = f"https://api.datamuse.com/words?ml={start_query}&sp&max=8000"
+        url = "https://api.datamuse.com/words?ml={}&sp&max=8000".format(start_query)
         r = requests.get(url)
         data = r.json()
-        
-        
-        
+           
         queue = collections.deque()
         '''
         if(not self.vertices.get(start_query)):
@@ -445,7 +458,6 @@ class SynonymGraph:
 
 
         while(len(queue) != 0):
-            self.dataFrameToCSV()
             
             print(len(queue))
             #print(self.df)
@@ -461,6 +473,7 @@ class SynonymGraph:
 
             if(nextWord != None):
                 nextNode = self.vertices.get(nextWord)
+                self.insertEdge(nextNode, nextNode, 0)
                 size = 0
                 for word in data:
                     if(size == 5):
@@ -479,7 +492,6 @@ class SynonymGraph:
                                 self.insertVertex(word['word'])
                                 targetVert = self.vertices.get(word['word'])
                                 self.insertEdge(nextNode, targetVert, word['score'])
-                                self.insertEdge(nextNode, nextNode, 0)
                                 queue.append(word['word'])
                                 
                                 self.df = self.df.append(pd.Series(name=word['word']))
@@ -500,6 +512,8 @@ class SynonymGraph:
             '''
 
             queue.popleft()
+            #graph.insertEdgestoDataFrame()
+            #graph.dataFrameToCSV()
             '''
             for vertex in list(self.vertices._keys):
                 print(vertex)
@@ -529,18 +543,44 @@ class SynonymGraph:
     def insertVerticesAndEdgesFromCSV(self):
         self.insertDataFrame('wordgraph.csv')
         print(self.df)
-        for word in list(self.df.index):
+        for word in self.df['words']:
             self.insertVertex(word)
 
-        for row in self.df:
-            for column in self.df:
-                self.insertEdge(row, column, self.df.at[row, column])
+
+        '''
+        for row in self.df['words']:
+            for column in self.df.columns[1:]:
+                if(self.df.loc[row, column] != 0):
+                    self.insertEdge(row, column, self.df.at[row, column])
         
+        
+        for column in self.df.columns[1:]:
+
+            self.df[column] = self.df[column].fillna('')
+
+        print(self.df)
+        '''
+        size = 1
+        for row in range(4373):
+            self.dj = self.dj.append(pd.Series(name=self.df.loc[row,'words']))
+            print(size)
+            size += 1
+            for column in self.df.columns[1:]:
+                if(not pd.isnull(self.df.loc[row, column])):
+                    self.insertEdge(self.vertices.get(self.df.loc[row,'words']), self.vertices.get(column), self.df.at[row, column])
+        
+
+
     
     def dijkstrasShortestPathtoCSV(self):
-        for word in self.df.index:
-            for emotion in self.dj.columns:
-                self.dj.at[word, emotion] = self.getPathCost(word, emotion)
+        print(self.dj)
+        for emotion in self.dj.columns[1:]:
+            #self.dj.at[word, emotion] = self.getPathCost(word, emotion)
+            self.getPathCost(self.df.loc[0, 'words'], emotion)
+            self.dj.to_csv('dijkstras.csv', index=True)
+
+            #self.dj.at[self.dj.iloc[word], emotion] 
+        
         
     
 
@@ -565,7 +605,7 @@ for key, value in data['associations_scored'].items():
 
 
 graph = SynonymGraph()
-
+'''
 graph.insertAllVertices('depressed')
 graph.insertAllVertices('angry')
 graph.insertAllVertices('frustrated')
@@ -588,14 +628,17 @@ graph.insertAllVertices('stressed')
 graph.insertAllVertices('prideful')
 
 graph.insertEdgestoDataFrame()
-
+graph.dataFrameToCSV()
 '''
+
+
 graph.insertVerticesAndEdgesFromCSV()
 
 graph.dijkstrasShortestPathtoCSV()
-graph.dijkstrasShortestPathtoCSV()
-'''
 
+
+
+#graph.dijkstrasShortestPathtoCSV()
 #graph.insertPaths()
 #graph.dataFrameToCSV()
 
