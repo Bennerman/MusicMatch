@@ -339,6 +339,9 @@ class SynonymGraph:
             
             return self.end.data - other.end.data
 
+
+    #you shouldn't need this
+
     def getIndex(self, edges, num):
         deepEdges = copy.deepcopy(edges)
 
@@ -355,7 +358,7 @@ class SynonymGraph:
     def dijkstrasShortestPath(self, start, end):
         
        
-        queue = collections.deque()
+        queue = collections.deque()  #change collections to priority queue
         
         if(not self.containsVertex(start)):
             raise Exception
@@ -392,8 +395,9 @@ class SynonymGraph:
 
                 for x in list(currNode.edgesLeaving):
                     
+
                     nodePath = SynonymGraph.Path(c)
-                    nodePath.extend(self.getIndex(currNode.edgesLeaving, x))
+                    nodePath.extend(self.getIndex(currNode.edgesLeaving, x)) #fix
                     queue.append(nodePath)
 
                        
